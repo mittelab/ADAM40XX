@@ -16,19 +16,33 @@ class Adam(object):
 
     def send_command(self,serial,command,arg=None):
         if command in self.commands.keys():
-            self.command_parsing(command)
+            command = self.command_parsing(command)
         else:
             return 0
+        print(command)
         return 1
 
     def command_parsing(self,command):
         cmd = self.commands[command][0]
-        print(len(cmd))
+        parse = []
+        supp = []
+        for i in range(len(cmd)-1):
+            supp.append(cmd[i])
+            if cmd[i+1] == cmd[i]:
+                continue
+            else:
+                parse.append(''.join(supp))
+                supp = []
+        i = i + 1
+        supp.append(cmd[i])
+        parse.append(''.join(supp))
+        return tuple(parse)
+
 
     def __str__(self):
         s = ''
         for k in self.commands.keys():
-            s = s + k + ' '
+            s = s + k + ':' + str(self.commands[k][0]) + '\n' + str(self.commands[k][1]) + '\n\n'
         return s
 
 
@@ -38,7 +52,7 @@ if __name__ == '__main__':
     except Exception as e:
         print(e.args[0])
     print(sens1)
-    if sens1.send_command('asdf','Configuration') == True:
+    if sens1.send_command('asdf','Enable/disable_Channels_for_Multiplexing') == True:
         print('sent')
-    else
+    else:
         print('command not sent, something went wrong')

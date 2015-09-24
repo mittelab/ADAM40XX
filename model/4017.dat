@@ -1,0 +1,18 @@
+{
+'Configuration':('%AANNTTCCFF','Set the address, input range, baud rate, data format, checksum status and/or integration time for the specified analog input module'),
+'Configuration_Status':('$AA2','Return the configuration parameters for the specified analog input module'),
+'Read_Channel_Status' : ('$AAF','Return the firmware version code from the specified analog input module'),
+'Read_Version' : ('$AAM','Return the module name from the specified analog input module'),
+'from_Channel_N' : ('#AA','Return the input values from all channels of the specified analog input module'),
+'Read_Analog_Input' : ('#AAN','Return the input value from channels number N of the specified analog input module'),
+'Configuration_Status' : ('$AA5VV','Enables/disables multiplexing simultaneously for seperate channels of the specified input module'),
+'Enable/disable_Channels_for_Multiplexing' :('$AA6','Ask the specified input module to return the status of all eight channels'),
+'Span_Calibration' : ('$AA0','Calibrate the analog input module to correct for gain errors'),
+'Offset_Calibration' : ('$AA1','Calibrate the analog input module to correct for offset errors')
+}
+
+
+
+
+
+
