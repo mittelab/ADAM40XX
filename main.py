@@ -1,12 +1,12 @@
 import serial
-import array
+import adam
 from time import sleep
 
 
 if __name__ ==  '__main__':
     buffer = ''
     ser = serial.Serial(
-        port='/dev/ttyUSB1',
+        port='/dev/ttyUSB0',
         baudrate=9600,
         bytesize=8,
         parity=serial.PARITY_NONE,
@@ -16,19 +16,11 @@ if __name__ ==  '__main__':
         rtscts=0,
         interCharTimeout=None
     )
-    s = 'test'
-    s_conv = bytearray()
-    s_conv.extend(map(ord, s))
-    s_conv = hex(0xFF)
-    print (s_conv)
-
-    while True:
-        #ser.write(s.encode(encoding='utf-8'))
-        ser.write(b'\x6F\xff')
-        #s.encode  ascii()
+    sonda1= adam.Adam('4017')
+    for i in range(5):
+        data = sonda1.send_command('Enable/disable_Channels_for_Multiplexing')
+        ser.write(data)
         sleep(0.1)
-        #print(ser.read(6))
-        print(ser.read(ser.inWaiting()))
-        #print(ser.read(ser.inWaiting())
+        print(ser.read(6))
 
     ser.close()
