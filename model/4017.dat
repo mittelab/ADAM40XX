@@ -1,6 +1,6 @@
 {
 'Configuration':('%AANNTTCCFF','Set the address, input range, baud rate, data format, checksum status and/or integration time for the specified analog input module'),
-'Configuration_Status':('$AA2','Return the configuration parameters for the specified analog input module'),
+'Configuration_Status_1':('$AA2','Return the configuration parameters for the specified analog input module'),
 'Read_Channel_Status' : ('$AAF','Return the firmware version code from the specified analog input module'),
 'Read_Version' : ('$AAM','Return the module name from the specified analog input module'),
 'from_Channel_N' : ('#AA','Return the input values from all channels of the specified analog input module'),

@@ -24,7 +24,8 @@ class Adam(object):
         pkg_send = bytearray()
         for c in command:
             if c == 'AA':
-                pkg_send.append(int(self.__id,16))
+                #pkg_send.append(int(self.__id,16))
+                pkg_send += bytearray(self.__id, encoding='utf-8')
                 continue
             if c in kwargs.keys():
                 pkg_send.append(int(kwargs.pop(c),16))
@@ -32,8 +33,8 @@ class Adam(object):
             if len(c) == 1:
                 pkg_send.append(ord(c))
                 continue
-        if len(pkg_send) != len(command):
-            return None
+        #if len(pkg_send) != len(command):
+        #    return None
         # add the CR character
         pkg_send.append(13)
         return pkg_send
@@ -76,6 +77,25 @@ class AdamReceiver(object):
             raise ValueError('No I/O error here?!?, you are fucked')
         commands = eval(load.read())
         self.command = commands[command]
+
+    def command_parsing(self):
+        cmd = self.command
+        parse = []
+        supp = []
+        for i in range(len(cmd)):
+            if cmd[i] == '(':
+                pass
+            supp.append(cmdd[i])
+            if cmd[i+1] == cmd[i]:
+                continue
+            else:
+                parse.append(''.join(supp))
+                supp = []
+        else:
+            i += 1
+            supp.append(cmd[i])
+
+
 
 
 if __name__ == '__main__':

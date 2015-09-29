@@ -11,16 +11,16 @@ if __name__ ==  '__main__':
         bytesize=8,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
-        timeout=0.25,
         xonxoff=0,
         rtscts=0,
         interCharTimeout=None
     )
-    sonda1= adam.Adam('4017')
-    for i in range(5):
-        data = sonda1.send_command('Enable/disable_Channels_for_Multiplexing')
+    sonda1 = adam.Adam('4017', adress='00')
+    for i in range(1):
+        data = sonda1.send_command('Configuration_Status_1')
+        print(data)
         ser.write(data)
-        sleep(0.1)
-        print(ser.read(6))
+        sleep(1.5)
+        print(ser.read(10))
 
     ser.close()
