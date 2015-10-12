@@ -1,9 +1,12 @@
 __author__ = 'ruggero'
 
 class Adam(object):
-    def __init__(self, model, adress='00'):
+    def __init__(self, model, address='00'):
         path = './model/%s.dat' % model
-        self.__id = adress
+        if address[0] > 'F' or address[1] > 'F':
+            raise ValueError('wrong address')
+        else:
+            self.__id = address
         try:
             load = open(path,'r')
         except IOError as e:
@@ -19,25 +22,24 @@ class Adam(object):
         """
         if command in self.commands.keys():
             command = self.command_parsing(command)
+            rec = AdamReceiver(''.join(command))
         else:
             return None
         pkg_send = bytearray()
         for c in command:
             if c == 'AA':
-                #pkg_send.append(int(self.__id,16))
                 pkg_send += bytearray(self.__id, encoding='utf-8')
                 continue
             if c in kwargs.keys():
+                # this line shouldn't work
                 pkg_send.append(int(kwargs.pop(c),16))
                 continue
             if len(c) == 1:
                 pkg_send.append(ord(c))
                 continue
-        #if len(pkg_send) != len(command):
-        #    return None
         # add the CR character
         pkg_send.append(13)
-        return pkg_send
+        return pkg_send, rec
 
     def command_parsing(self,command):
         cmd = self.commands[command][0]
@@ -76,35 +78,56 @@ class AdamReceiver(object):
         except:
             raise ValueError('No I/O error here?!?, you are fucked')
         commands = eval(load.read())
-        self.command = commands[command]
+        self.command = self.command_parsing(commands[command])
 
-    def command_parsing(self):
-        cmd = self.command
+    def receieve_command(self, received):
+        if len(received) == 0:
+            raise 'well, fuck'
+        received = received.decode('utf-8')
+        if received[0] == '?':
+            return ('AA', received[1:])
+        elif received[0] == '!':
+            supp = []
+            pointer = 0
+            for i in self.command:
+                supp.append(received[pointer:pointer+len(i)])
+                pointer += len(i)
+            xmap = zip(self.command, supp)
+            return list(xmap)
+        elif received[0] == ord('>'):
+            print('caso 3')
+
+    @staticmethod
+    def command_parsing(command):
         parse = []
         supp = []
-        for i in range(len(cmd)):
-            if cmd[i] == '(':
-                pass
-            supp.append(cmdd[i])
-            if cmd[i+1] == cmd[i]:
-                continue
+        flag = False
+        for i in range(len(command)):
+            supp.append(command[i])
+            if command[i] == '(' or flag:
+                flag = True
+                if command[i] == ')':
+                    flag = False
+                    parse.append(''.join(supp))
+                    supp = []
+                    continue
+                else:
+                    continue
+            if i < len(command)-1:
+                if command[i+1] == command[i]:
+                    continue
+                else:
+                    parse.append(''.join(supp))
+                    supp = []
             else:
                 parse.append(''.join(supp))
-                supp = []
-        else:
-            i += 1
-            supp.append(cmd[i])
-
-
-
+        return tuple(parse)
 
 if __name__ == '__main__':
-
-    try:
-        sens1 = Adam('4017')
-    except Exception as e:
-        print(e.args[0])
-    try:
-        print(sens1.send_command('Read_Analog_Input', N='2'))
-    except Exception as e:
-        print(e.args[0])
+    sens1 = Adam('4017')
+    a, b = sens1.send_command('Configuration_Status_1')
+    #a, b = sens1.send_command('Read_Analog_Input')
+    print(a)
+    print(b.command)
+    b.receieve_command(b'!04090680\r')
+    #b.receieve_command(b'?04\r')

@@ -15,12 +15,17 @@ if __name__ ==  '__main__':
         rtscts=0,
         interCharTimeout=None
     )
-    sonda1 = adam.Adam('4017', adress='00')
+    sonda1 = adam.Adam('4017', address='04')
     for i in range(1):
-        data = sonda1.send_command('Configuration_Status_1')
+        data, rec = sonda1.send_command('Configuration_Status_1')
+        #data, rec = sonda1.send_command('Read_Analog_Input')
         print(data)
         ser.write(data)
-        sleep(1.5)
-        print(ser.read(10))
+        sleep(1)
+        number_data = ser.inWaiting()
+        dati = ser.read(number_data)
+        print(dati)
+        print(len(dati))
+        rec.receieve_command(dati)
 
     ser.close()
