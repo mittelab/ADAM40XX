@@ -74,28 +74,46 @@ class AdamReceiver(object):
             load = open(path,'r')
         except IOError as e:
             print ("I/O error({0}): {1}".format(e.errno, e.strerror))
-            raise ValueError('receive database not found', 0)
+            raise ValueError('receive database not found')
         except:
             raise ValueError('No I/O error here?!?, you are fucked')
+        # answer database parsing here
         commands = eval(load.read())
-        self.command = self.command_parsing(commands[command])
+        # if there is a standard answer, parsing of it
+        if command in commands:
+            self.command = self.command_parsing(commands[command])
+        else:
+            self.command = None
 
     def receieve_command(self, received):
+        debug = True
         if len(received) == 0:
-            raise 'well, fuck'
+            return [('data', None)]
+        # Decoding starts here
         received = received.decode('utf-8')
         if received[0] == '?':
-            return ('AA', received[1:])
+            # wrong command has been sent
+            return [('AA', received[1:])]
         elif received[0] == '!':
-            supp = []
-            pointer = 0
-            for i in self.command:
-                supp.append(received[pointer:pointer+len(i)])
-                pointer += len(i)
-            xmap = zip(self.command, supp)
-            return list(xmap)
-        elif received[0] == ord('>'):
-            print('caso 3')
+            # commando with info has been sent
+            if self.command is None:
+                return [('info', received[1:])]
+            else:
+                supp = []
+                pointer = 0
+                for i in self.command:
+                    supp.append(received[pointer:pointer+len(i)])
+                    pointer += len(i)
+                xmap = zip(self.command, supp)
+                if debug: print(list(xmap))
+                return list(xmap)
+        elif received[0] == '>':
+            # command with data has been sent
+            if debug: print(received.split('+'))
+            import re
+            print(re.split(r'[+,-]\s*',received[1:]))
+        else:
+            raise ValueError('Error in during the communications')
 
     @staticmethod
     def command_parsing(command):
@@ -129,5 +147,6 @@ if __name__ == '__main__':
     #a, b = sens1.send_command('Read_Analog_Input')
     print(a)
     print(b.command)
-    b.receieve_command(b'!04090680\r')
+    #b.receieve_command(b'!04090680\r')
     #b.receieve_command(b'?04\r')
+    b.receieve_command(b'>+0.5-0.4+9.2\r')
