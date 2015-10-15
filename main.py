@@ -18,10 +18,22 @@ if __name__ == '__main__':
         )
     except:
         print('port fail')
-        exit(0)
-    # Example:
+        #exit(0)
+    print('module >')
+    module = input()
+    print('Adress >')
+    address = input()
 
-    sonda1 = adam.Adam('4017', address='04')
+    # Example:
+    module = '4017'
+    address = '04'
+
+    sonda1 = adam.Adam(module, address=address)
+
+    while True:
+         c = input()
+         if c == 'E':
+            break
     # first question
     data, rec = sonda1.send_command('Configuration_Status_1')
     #data, rec = sonda1.send_command('Read_Analog_Input')

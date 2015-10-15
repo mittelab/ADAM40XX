@@ -1,5 +1,6 @@
 __author__ = 'ruggero'
 
+
 class Adam(object):
     def __init__(self, model, address='00'):
         path = './model/%s.dat' % model
@@ -86,14 +87,14 @@ class AdamReceiver(object):
             self.command = None
 
     def receieve_command(self, received):
-        debug = True
+        debug = False
         if len(received) == 0:
             return [('data', None)]
         # Decoding starts here
         received = received.decode('utf-8')
         if received[0] == '?':
             # wrong command has been sent
-            return [('AA', received[1:])]
+            return [('AA', received[1:-1])]
         elif received[0] == '!':
             # commando with info has been sent
             if self.command is None:
@@ -109,11 +110,16 @@ class AdamReceiver(object):
                 return list(xmap)
         elif received[0] == '>':
             # command with data has been sent
-            if debug: print(received.split('+'))
             import re
-            print(re.split(r'[+,-]\s*',received[1:]))
+            l1=[]
+            l = re.findall(r'([-+]\d+.\d+)', received[1:])
+            for i in range(len(l)):
+                s = 'IN' + str(i)
+                l1.append((s, l[i]))
+            if debug: print(l1)
+            return l1
         else:
-            raise ValueError('Error in during the communications')
+            raise ValueError('Error during the communications')
 
     @staticmethod
     def command_parsing(command):
@@ -147,6 +153,9 @@ if __name__ == '__main__':
     #a, b = sens1.send_command('Read_Analog_Input')
     print(a)
     print(b.command)
-    #b.receieve_command(b'!04090680\r')
-    #b.receieve_command(b'?04\r')
-    b.receieve_command(b'>+0.5-0.4+9.2\r')
+    print('-----')
+    print(b.receieve_command(b'!04090680\r'))
+    print('----')
+    print(b.receieve_command(b'?04\r'))
+    print('----')
+    print(b.receieve_command(b'>+0.5-0.4+9.2-7.5\r'))
