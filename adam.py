@@ -27,22 +27,30 @@ class Adam(object):
             command = self.command_parsing(command)
             rec = AdamReceiver(''.join(command))
         else:
+            # not so good
+            print('error in the parameter')
             return None
-        if type(other) is dict or type(other) is None:
+
+        if other is None:
+            other = {}
+        if type(other) is not dict:
+            # not so good
+            print('error in the type of 3rd argument')
             return None
+
         # build the command
         pkg_send = bytearray()
         for c in command:
             if c == 'AA':
                 pkg_send += bytearray(self.__id, encoding='utf-8')
             elif c in other.keys():
-                # this line shouldn't work
-                pkg_send.append(int(other.pop(c),16))
+                pkg_send += bytearray(other.pop(c), encoding='utf-8')
+                #pkg_send.append(int(other.pop(c),16))
                 continue
             elif len(c) == 1:
                 pkg_send.append(ord(c))
             else:
-                # not so god
+                # not so good
                 print('error in the parameters')
                 return None
         # add the CR character
