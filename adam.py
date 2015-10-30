@@ -1,9 +1,10 @@
 __author__ = 'ruggero'
-
+import re
 
 class Adam(object):
     def __init__(self, model, address='00'):
         path = './model/%s.dat' % model
+        self.__model = model
         if address[0] > 'F' or address[1] > 'F':
             raise ValueError('wrong address')
         else:
@@ -14,30 +15,36 @@ class Adam(object):
             print ("I/O error({0}): {1}".format(e.errno, e.strerror))
             raise ValueError('model not defined', 0)
         except:
-             raise ValueError('No I/O error here?!?, you are fucked')
+            raise ValueError('No I/O error here?!?, you are fucked')
         self.commands = eval(load.read())
 
-    def send_command(self, command, **kwargs):
+    def send_command(self, command, other=None):
         """
-        ......
+        this method given a command and the list of parameters needed return a bytearray and a reciver class
         """
+        #primary check
         if command in self.commands.keys():
             command = self.command_parsing(command)
             rec = AdamReceiver(''.join(command))
         else:
             return None
+        if type(other) is dict or type(other) is None:
+            return None
+        # build the command
         pkg_send = bytearray()
         for c in command:
             if c == 'AA':
                 pkg_send += bytearray(self.__id, encoding='utf-8')
-                continue
-            if c in kwargs.keys():
+            elif c in other.keys():
                 # this line shouldn't work
-                pkg_send.append(int(kwargs.pop(c),16))
+                pkg_send.append(int(other.pop(c),16))
                 continue
-            if len(c) == 1:
+            elif len(c) == 1:
                 pkg_send.append(ord(c))
-                continue
+            else:
+                # not so god
+                print('error in the parameters')
+                return None
         # add the CR character
         pkg_send.append(13)
         return pkg_send, rec
@@ -59,9 +66,15 @@ class Adam(object):
         parse.append(''.join(supp))
         return tuple(parse)
 
+    def cmd(self):
+        s = ''
+        for k in self.commands.keys():
+            s = s + k + ':' + str(self.commands[k][0]) + '\n'
+        return s
 
     def __str__(self):
-        s = ''
+        s = 'initialized module = ' + str(self.__model) + '\n'
+        s = s + 'initialized address = ' + str(self.__id) + '\n\n'
         for k in self.commands.keys():
             s = s + k + ':' + str(self.commands[k][0]) + '\n' + str(self.commands[k][1]) + '\n\n'
         return s
@@ -110,7 +123,6 @@ class AdamReceiver(object):
                 return list(xmap)
         elif received[0] == '>':
             # command with data has been sent
-            import re
             l1=[]
             l = re.findall(r'([-+]\d+.\d+)', received[1:])
             for i in range(len(l)):
@@ -149,7 +161,7 @@ class AdamReceiver(object):
 
 if __name__ == '__main__':
     sens1 = Adam('4017')
-    a, b = sens1.send_command('Configuration_Status_1')
+    a, b = sens1.send_command('ConfB')
     #a, b = sens1.send_command('Read_Analog_Input')
     print(a)
     print(b.command)

@@ -3,10 +3,26 @@ import adam
 from time import sleep
 
 
+class MySerial(serial.Serial):
+    def myreadline(self):
+        eol = b'\r'
+        leneol = len(eol)
+        line = bytearray()
+        while True:
+            c = self.read(1)
+            if c:
+                line += c
+                if line[-leneol:] == eol:
+                    break
+            else:
+                break
+        return bytes(line)
+
+
 if __name__ == '__main__':
     buffer = ''
     try:
-        ser = serial.Serial(
+        ser = MySerial(
             port='/dev/ttyUSB0',
             baudrate=9600,
             bytesize=8,
@@ -16,36 +32,62 @@ if __name__ == '__main__':
             rtscts=0,
             interCharTimeout=None
         )
-    except:
+    except serial.SerialException as Error:
+        print(Error)
         print('port fail')
-        #exit(0)
+
     print('module >')
-    module = input()
+    # module = input()
     print('Adress >')
-    address = input()
+    # address = input()
 
     # Example:
     module = '4017'
     address = '04'
 
     sonda1 = adam.Adam(module, address=address)
+    debug = True
+
+
 
     while True:
-         c = input()
-         if c == 'E':
-            break
-    # first question
-    data, rec = sonda1.send_command('Configuration_Status_1')
-    #data, rec = sonda1.send_command('Read_Analog_Input')
-    print('data thet are going to be send', data)
-    ser.write(data)
-    # wait for answare to be collected
-    sleep(1)
-    # number_data = ser.inWaiting()
-    dati = ser.readline()
-    # dati = ser.read(number_data)
-    print(dati)
-    print(len(dati))
-    answer = rec.receieve_command(dati)
-    print(answer)
-    ser.close()
+        print('operation >')
+        switch = input()
+
+        if switch == 'help':
+            print('--help--')
+            print('cmd : the list of commands of the module')
+            print('send: send command')
+            print('info   : a lot of stuff')
+            print('exit   : exit(0)')
+        elif switch == 'cmd':
+            print('list of available commands:')
+            print(sonda1.cmd())
+        elif switch == 'send':
+            try:
+                ser
+            except NameError:
+                print('serial port is not open')
+                continue
+            print('command to send >')
+            command = input()
+            data, rec = sonda1.send_command(command)
+            ser.write(data)
+            sleep(0.5)
+            if debug:
+                dati = ser.myreadline()
+                print(dati, len(dati))
+                answer = rec.receieve_command(dati)
+                print(answer)
+            else:
+                print(rec.receieve_command(ser.readline()))
+        elif switch == 'info':
+            print(sonda1)
+        elif switch == 'exit':
+            try:
+                ser.close()
+            except NameError:
+                pass
+            exit(0)
+        else:
+            print('wrong command')
