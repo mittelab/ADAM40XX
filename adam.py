@@ -37,11 +37,11 @@ class Adam(object):
             elif c in kwargs.keys() or c == 'N':
                 pkg_send += bytearray(kwargs.pop(c), encoding='utf-8')
                 # pkg_send.append(int(other.pop(c),16))
+
             elif len(c) == 1:
                 pkg_send.append(ord(c))
             else:
                 raise ValueError('error in the parameters')
-
         # add the CR character
         pkg_send.append(13)
 
@@ -123,7 +123,7 @@ class Adam(object):
             else:
                 return [('data', None),('error', 'not standard pack')]
 
-        return pkg_send, rec
+        return rec
 
     def command_parsing(self,command):
         cmd = self.commands[command][0]
@@ -159,14 +159,14 @@ class Adam(object):
 
 
 if __name__ == '__main__':
-    #sens1 = Adam('4017')
-    #a, b = sens1.send_command('ConfB')
-    #a, b = sens1.send_command('Read_Analog_Input')
+    sens1 = Adam('4017')
+    a = sens1.send_command('ConfB')
     #print(a)
     #print(b.command)
-    #print('-----')
-    #print(b.receieve_command(b'!04090680\r'))
-    #print('----')
-    #print(b.receieve_command(b'?04\r'))
-    #print('----')
-    #print(b.receieve_command(b'>+0.5-0.4+9.2-7.5\r'))
+    print('-----')
+    print(a(b'!04090680\r'))
+    print('----')
+    print(a(b'?04\r'))
+    print('----')
+    a = sens1.send_command('ReadAll')
+    print(a(b'>+0.5-0.4+9.2-7.5\r'))
