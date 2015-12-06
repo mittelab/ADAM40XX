@@ -44,8 +44,84 @@ class Adam(object):
 
         # add the CR character
         pkg_send.append(13)
+
         # creation of the receiver function
-        def rec(data):
+        def rec(received):
+            debug = False
+            nonlocal command
+            path = './model/receive.dat'
+            try:
+                load = open(path,'r')
+            except IOError as e:
+                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+                raise ValueError('receive database not found')
+            except:
+                raise ValueError('No I/O error here?!?, you are fucked')
+
+            # answer database parsing here
+            commands = eval(load.read())
+
+            # if there is a standard answer, do the parsing
+            if command in commands:
+                rec_command = []
+                supp = []
+                flag = False
+                for i in range(len(command)):
+                    supp.append(command[i])
+                    if command[i] == '(' or flag:
+                        flag = True
+                        if command[i] == ')':
+                            flag = False
+                            parse.append(''.join(supp))
+                            supp = []
+                            continue
+                        else:
+                            continue
+                    if i < len(command)-1:
+                        if command[i+1] == command[i]:
+                            continue
+                        else:
+                            rec_command.append(''.join(supp))
+                            supp = []
+                    else:
+                        rec_command.append(''.join(supp))
+                rec_command = tuple(rec_command)
+            else:
+                rec_command = None
+
+            # Decoding starts here
+            if len(received) == 0:
+                return [('data', None),('error', '0 data received')]
+
+            received = received.decode('utf-8')
+
+            if received[0] == '?':
+                # wrong command has been sent
+                return [('AA', received[1:-1]), ('error', 'wrong command has been sent')]
+            elif received[0] == '!':
+                # commando with info has been sent
+                if rec_command is None:
+                    return [('info', received[1:])]
+                else:
+                    supp = []
+                    pointer = 0
+                    for i in rec_command:
+                        supp.append(received[pointer:pointer+len(i)])
+                        pointer += len(i)
+                    xmap = zip(rec_command, supp)
+                    if debug: print(list(xmap))
+                    return list(xmap)
+            elif received[0] == '>':
+                # command with data has been sent
+                l1=[]
+                l = re.findall(r'([-+]\d+.\d+)', received[1:])
+                for i in range(len(l)):
+                    s = 'IN' + str(i)
+                    l1.append((s, l[i]))
+                if debug: print(l1)
+                return l1
+            else:
+                return [('data', None),('error', 'not standard pack')]
 
         return pkg_send, rec
 
@@ -80,94 +156,17 @@ class Adam(object):
         return s
 
 
-class AdamReceiver(object):
 
-    def __init__(self,command):
-        path = './model/receive.dat'
-        try:
-            load = open(path,'r')
-        except IOError as e:
-            print ("I/O error({0}): {1}".format(e.errno, e.strerror))
-            raise ValueError('receive database not found')
-        except:
-            raise ValueError('No I/O error here?!?, you are fucked')
-        # answer database parsing here
-        commands = eval(load.read())
-        # if there is a standard answer, parsing of it
-        if command in commands:
-            self.command = self.command_parsing(commands[command])
-        else:
-            self.command = None
-
-    def receieve_command(self, received):
-        debug = False
-        if len(received) == 0:
-            return [('data', None),('error', '0 data received')]
-        # Decoding starts here
-        received = received.decode('utf-8')
-        if received[0] == '?':
-            # wrong command has been sent
-            return [('AA', received[1:-1])]
-        elif received[0] == '!':
-            # commando with info has been sent
-            if self.command is None:
-                return [('info', received[1:])]
-            else:
-                supp = []
-                pointer = 0
-                for i in self.command:
-                    supp.append(received[pointer:pointer+len(i)])
-                    pointer += len(i)
-                xmap = zip(self.command, supp)
-                if debug: print(list(xmap))
-                return list(xmap)
-        elif received[0] == '>':
-            # command with data has been sent
-            l1=[]
-            l = re.findall(r'([-+]\d+.\d+)', received[1:])
-            for i in range(len(l)):
-                s = 'IN' + str(i)
-                l1.append((s, l[i]))
-            if debug: print(l1)
-            return l1
-        else:
-            return [('data', None),('error', 'not standard pack')]
-
-    @staticmethod
-    def command_parsing(command):
-        parse = []
-        supp = []
-        flag = False
-        for i in range(len(command)):
-            supp.append(command[i])
-            if command[i] == '(' or flag:
-                flag = True
-                if command[i] == ')':
-                    flag = False
-                    parse.append(''.join(supp))
-                    supp = []
-                    continue
-                else:
-                    continue
-            if i < len(command)-1:
-                if command[i+1] == command[i]:
-                    continue
-                else:
-                    parse.append(''.join(supp))
-                    supp = []
-            else:
-                parse.append(''.join(supp))
-        return tuple(parse)
 
 if __name__ == '__main__':
-    sens1 = Adam('4017')
-    a, b = sens1.send_command('ConfB')
+    #sens1 = Adam('4017')
+    #a, b = sens1.send_command('ConfB')
     #a, b = sens1.send_command('Read_Analog_Input')
-    print(a)
-    print(b.command)
-    print('-----')
-    print(b.receieve_command(b'!04090680\r'))
-    print('----')
-    print(b.receieve_command(b'?04\r'))
-    print('----')
-    print(b.receieve_command(b'>+0.5-0.4+9.2-7.5\r'))
+    #print(a)
+    #print(b.command)
+    #print('-----')
+    #print(b.receieve_command(b'!04090680\r'))
+    #print('----')
+    #print(b.receieve_command(b'?04\r'))
+    #print('----')
+    #print(b.receieve_command(b'>+0.5-0.4+9.2-7.5\r'))
