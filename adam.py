@@ -1,5 +1,5 @@
-__author__ = 'ruggero'
 import re
+__author__ = 'ruggero'
 
 class Adam(object):
     def __init__(self, model, address='00'):
@@ -22,7 +22,7 @@ class Adam(object):
         """
         this method given a command and the list of parameters needed return a bytearray and a reciver class
         """
-        #primary check
+        # primary check
         if command in self.commands.keys():
             command = self.command_parsing(command)
             rec = AdamReceiver(''.join(command))
@@ -43,10 +43,9 @@ class Adam(object):
         for c in command:
             if c == 'AA':
                 pkg_send += bytearray(self.__id, encoding='utf-8')
-            elif c in other.keys():
+            elif c in other.keys() or c == 'N':
                 pkg_send += bytearray(other.pop(c), encoding='utf-8')
-                #pkg_send.append(int(other.pop(c),16))
-                continue
+                # pkg_send.append(int(other.pop(c),16))
             elif len(c) == 1:
                 pkg_send.append(ord(c))
             else:
@@ -110,7 +109,7 @@ class AdamReceiver(object):
     def receieve_command(self, received):
         debug = False
         if len(received) == 0:
-            return [('data', None)]
+            return [('data', None),('error', '0 data received')]
         # Decoding starts here
         received = received.decode('utf-8')
         if received[0] == '?':
@@ -139,7 +138,7 @@ class AdamReceiver(object):
             if debug: print(l1)
             return l1
         else:
-            raise ValueError('Error during the communications')
+            return [('data', None),('error', 'not standard pack')]
 
     @staticmethod
     def command_parsing(command):

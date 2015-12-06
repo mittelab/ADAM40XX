@@ -1,30 +1,26 @@
+from mySerial import MySerial
 import serial
 import adam
 from time import sleep
-from time import time
-
-
-class MySerial(serial.Serial):
-    def myreadline(self):
-        eol = b'\r'
-        leneol = len(eol)
-        line = bytearray()
-        while True:
-            c = self.read(1)
-            if c:
-                line += c
-                if line[-leneol:] == eol:
-                    break
-            else:
-                break
-        return bytes(line)
+from threading import Thread
+import csv
 
 
 def inquiring(probe, ser, t, command):
-    data, rec = probe.send_command(command)
-    ser.write(data)
-    print(rec.receieve_command(ser.readline()))
-    sleep(t)
+    other = {}
+    parameters = probe.command_parsing(command)
+    for c in parameters:
+        if (len(c) >= 2 and c != 'AA') or c =='N':
+            print('optional parameter %s >' %c)
+            other[c] = input()
+    data, rec = probe.send_command(command, other)
+    save = open('save.txt','w')
+    for i in range(100):
+        ser.write(data)
+        #save.write(str(rec.receieve_command(ser.myreadline())))
+        print(str(rec.receieve_command(ser.myreadline())))
+        sleep(t)
+    save.close()
 
 if __name__ == '__main__':
     buffer = ''
@@ -47,7 +43,7 @@ if __name__ == '__main__':
         print('baudrate (9600)>')
         a2 = int(input())
         print('bytesize (8)>')
-        a3 = (input())
+        a3 = int(input())
         a4 = serial.PARITY_NONE
         a5 = serial.STOPBITS_ONE
         a6 = 0
@@ -97,14 +93,10 @@ if __name__ == '__main__':
                 continue
             print('command to send >')
             command = input()
-            if debug:
-                t_i = time()
             parameters = sonda1.command_parsing(command)
-            if debug:
-                print(time()-t_i)
             other = {}
             for c in parameters:
-                if len(c) >= 2 and c != 'AA':
+                if (len(c) >= 2 and c != 'AA') or c =='N':
                     print('parametro addizionale %s >' %c)
                     other[c] = input()
             data, rec = sonda1.send_command(command, other)
@@ -116,10 +108,10 @@ if __name__ == '__main__':
                 answer = rec.receieve_command(dati)
                 print(answer)
             else:
-                print(rec.receieve_command(ser.readline()))
+                print(rec.receieve_command(ser.myreadline()))
         elif switch == 'info':
             print(sonda1)
-        elif switch == 'acquisition' and flag:
+        elif switch == 'acq' and flag:
             print('delay >')
             t = int(input())
             try:
@@ -129,10 +121,13 @@ if __name__ == '__main__':
                 continue
             print('command >')
             command = input()
-            inquiring(sonda1,ser,t,command)
+            #P1 = Thread(target=inquiring(sonda1, ser, t, command))
+            inquiring(sonda1, ser, t, command)
+            #P1.run()
             flag = False
 
         elif switch == 'stop_acq' and not flag:
+            #P1.stop()
             flag = True
 
         elif switch == 'exit':
@@ -141,5 +136,7 @@ if __name__ == '__main__':
             except NameError:
                 pass
             exit(0)
+        elif not flag:
+            print('port busy')
         else:
             print('wrong command')
