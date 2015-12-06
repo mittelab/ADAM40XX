@@ -121,7 +121,7 @@ class Adam(object):
                 if debug: print(l1)
                 return l1
             else:
-                return [('data', None),('error', 'not standard pack')]
+                return [('data', None), ('error', 'not standard pack')]
 
         return pkg_send, rec
 
