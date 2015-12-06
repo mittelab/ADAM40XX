@@ -3,7 +3,7 @@ __author__ = 'ruggero'
 
 
 class MySerial(serial.Serial):
-    def myreadline(self):
+    def my_read_line(self):
         eol = b'\r'
         leneol = len(eol)
         line = bytearray()
@@ -18,3 +18,8 @@ class MySerial(serial.Serial):
             else:
                 break
         return bytes(line)
+
+    def inquiring(self, command, rec):
+        self.write(command)
+        print(str(rec(self.my_readl_ine())))
+        #scrivere
