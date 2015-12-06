@@ -6,11 +6,6 @@ from time import sleep
 import csv
 
 
-def inquiring(probe, ser, command):
-    ser.write(data)
-    print(str(rec.receieve_command(ser.myreadline())))
-    #scrivere
-
 if __name__ == '__main__':
     buffer = ''
     debug = True
@@ -110,19 +105,32 @@ if __name__ == '__main__':
         elif switch == 'acq' and flag:
             print('delay >')
             t = int(input())
+            print('file name >')
+            file = input()
             try:
                 ser
             except NameError:
                 print('serial port is not open')
                 continue
+            file = open(file, 'a')
+            w = csv.writer(file, dialect='excel')
+            c.writerow(["data", "Address"])
             print('command >')
             command = input()
-            process = RepeatedTimer.RepeatedTimer(t, inquiring, sonda1, ser, command)
+            parameters = sonda1.command_parsing(command)
+            other = {}
+            for c in parameters:
+                if (len(c) >= 2 and c != 'AA') or c =='N':
+                    print('optional parameter {} >'.formtat(c))
+                    other[c] = input()
+            command, receiver = sonda1.send_command(command, **other)
+            process = RepeatedTimer.RepeatedTimer(t, ser.inquiring, command, receiver, w)
             process.start()
             flag = False
             print('process is starting')
 
         elif switch == 'stop_acq' and not flag:
+            file.close()
             process.stop()
             flag = True
             print('process has been stopped')

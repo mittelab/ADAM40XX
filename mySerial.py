@@ -19,7 +19,8 @@ class MySerial(serial.Serial):
                 break
         return bytes(line)
 
-    def inquiring(self, command, rec):
+    def inquiring(self, command, rec, save):
         self.write(command)
         print(str(rec(self.my_readl_ine())))
-        #scrivere
+        save.writerow(["Name", "Address", "Telephone", "Fax", "E-mail", "Others"])
+        # write
