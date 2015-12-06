@@ -114,7 +114,7 @@ if __name__ == '__main__':
                 continue
             file = open(file, 'a')
             w = csv.writer(file, dialect='excel')
-            c.writerow(["data", "Address"])
+            c.writerow(["time", "Address"])
             print('command >')
             command = input()
             parameters = sonda1.command_parsing(command)
@@ -124,6 +124,9 @@ if __name__ == '__main__':
                     print('optional parameter {} >'.formtat(c))
                     other[c] = input()
             command, receiver = sonda1.send_command(command, **other)
+            ser.write(command)
+            data = receiver(ser.my_read_line())
+            c.writerow(data)
             process = RepeatedTimer.RepeatedTimer(t, ser.inquiring, command, receiver, w)
             process.start()
             flag = False
