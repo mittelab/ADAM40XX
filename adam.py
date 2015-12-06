@@ -18,42 +18,35 @@ class Adam(object):
             raise ValueError('No I/O error here?!?, you are fucked')
         self.commands = eval(load.read())
 
-    def send_command(self, command, other=None):
+    def send_command(self, command, **kwargs):
         """
         this method given a command and the list of parameters needed return a bytearray and a reciver class
         """
         # primary check
         if command in self.commands.keys():
             command = self.command_parsing(command)
-            rec = AdamReceiver(''.join(command))
+            #rec = AdamReceiver(''.join(command))
         else:
-            # not so good
-            print('error in the parameter')
-            return None
-
-        if other is None:
-            other = {}
-        if type(other) is not dict:
-            # not so good
-            print('error in the type of 3rd argument')
-            return None
+            raise ValueError('command not defined')
 
         # build the command
         pkg_send = bytearray()
         for c in command:
             if c == 'AA':
                 pkg_send += bytearray(self.__id, encoding='utf-8')
-            elif c in other.keys() or c == 'N':
-                pkg_send += bytearray(other.pop(c), encoding='utf-8')
+            elif c in kwargs.keys() or c == 'N':
+                pkg_send += bytearray(kwargs.pop(c), encoding='utf-8')
                 # pkg_send.append(int(other.pop(c),16))
             elif len(c) == 1:
                 pkg_send.append(ord(c))
             else:
-                # not so good
-                print('error in the parameters')
-                return None
+                raise ValueError('error in the parameters')
+
         # add the CR character
         pkg_send.append(13)
+        # creation of the receiver function
+        def rec(data):
+
         return pkg_send, rec
 
     def command_parsing(self,command):
