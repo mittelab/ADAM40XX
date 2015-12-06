@@ -123,7 +123,7 @@ class Adam(object):
             else:
                 return [('data', None),('error', 'not standard pack')]
 
-        return rec
+        return pkg_send, rec
 
     def command_parsing(self,command):
         cmd = self.commands[command][0]
@@ -160,13 +160,13 @@ class Adam(object):
 
 if __name__ == '__main__':
     sens1 = Adam('4017')
-    a = sens1.send_command('ConfB')
+    a, b = sens1.send_command('ConfB')
     #print(a)
     #print(b.command)
     print('-----')
-    print(a(b'!04090680\r'))
+    print(b(b'!04090680\r'))
     print('----')
-    print(a(b'?04\r'))
+    print(b(b'?04\r'))
     print('----')
-    a = sens1.send_command('ReadAll')
-    print(a(b'>+0.5-0.4+9.2-7.5\r'))
+    a, b = sens1.send_command('ReadAll')
+    print(b(b'>+0.5-0.4+9.2-7.5\r'))

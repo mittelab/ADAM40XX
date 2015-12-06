@@ -2,7 +2,6 @@ from mySerial import MySerial
 import serial
 import adam
 from time import sleep
-from threading import Thread
 import csv
 
 
@@ -25,49 +24,52 @@ def inquiring(probe, ser, t, command):
 if __name__ == '__main__':
     buffer = ''
     debug = True
+    while True:
+        if debug:
+            a1 = '/dev/ttyUSB0'
+            a2 = 9600
+            a3 = 8
+            a4 = serial.PARITY_NONE
+            a5 = serial.STOPBITS_ONE
+            a6 = 0
+            a7 = 0
+            a8 = None
+            module = '4017'
+            address = '04'
+        else:
+            print('porta da aprire >')
+            a1 = input()
+            print('baudrate (9600)>')
+            a2 = int(input())
+            print('bytesize (8)>')
+            a3 = int(input())
+            a4 = serial.PARITY_NONE
+            a5 = serial.STOPBITS_ONE
+            a6 = 0
+            a7 = 0
+            a8 = None
+            print('module >')
+            module = input()
+            print('Adress >')
+            address = input()
 
-    if debug:
-        a1 = '/dev/ttyUSB0'
-        a2 = 9600
-        a3 = 8
-        a4 = serial.PARITY_NONE
-        a5 = serial.STOPBITS_ONE
-        a6 = 0
-        a7 = 0
-        a8 = None
-        module = '4017'
-        address = '04'
-    else:
-        print('porta da aprire >')
-        a1 = input()
-        print('baudrate (9600)>')
-        a2 = int(input())
-        print('bytesize (8)>')
-        a3 = int(input())
-        a4 = serial.PARITY_NONE
-        a5 = serial.STOPBITS_ONE
-        a6 = 0
-        a7 = 0
-        a8 = None
-        print('module >')
-        module = input()
-        print('Adress >')
-        address = input()
-
-    try:
-        ser = MySerial(
-            port=a1,
-            baudrate=a2,
-            bytesize=a3,
-            parity=a4,
-            stopbits=a5,
-            xonxoff=a6,
-            rtscts=a7,
-            interCharTimeout=a8
-        )
-    except serial.SerialException as Error:
-        print(Error)
-        print('port fail')
+        try:
+            ser = MySerial(
+                port=a1,
+                baudrate=a2,
+                bytesize=a3,
+                parity=a4,
+                stopbits=a5,
+                xonxoff=a6,
+                rtscts=a7,
+                interCharTimeout=a8
+            )
+            break
+        except serial.SerialException as Error:
+            print(Error)
+            print('port fail')
+            if debug:
+                break
 
     sonda1 = adam.Adam(module, address=address)
     flag = True
@@ -99,16 +101,16 @@ if __name__ == '__main__':
                 if (len(c) >= 2 and c != 'AA') or c =='N':
                     print('parametro addizionale %s >' %c)
                     other[c] = input()
-            data, rec = sonda1.send_command(command, other)
+            data, rec = sonda1.send_command(command, **other)
             ser.write(data)
             if debug:
                 sleep(0.5)
                 dati = ser.myreadline()
                 print(dati, len(dati))
-                answer = rec.receieve_command(dati)
+                answer = rec(dati)
                 print(answer)
             else:
-                print(rec.receieve_command(ser.myreadline()))
+                print(rec(ser.myreadline()))
         elif switch == 'info':
             print(sonda1)
         elif switch == 'acq' and flag:
