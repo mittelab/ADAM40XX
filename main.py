@@ -1,25 +1,15 @@
 from mySerial import MySerial
 import serial
 import adam
+import RepeatedTimer
 from time import sleep
 import csv
 
 
-def inquiring(probe, ser, t, command):
-    other = {}
-    parameters = probe.command_parsing(command)
-    for c in parameters:
-        if (len(c) >= 2 and c != 'AA') or c =='N':
-            print('optional parameter %s >' %c)
-            other[c] = input()
-    data, rec = probe.send_command(command, other)
-    save = open('save.txt','w')
-    for i in range(100):
-        ser.write(data)
-        #save.write(str(rec.receieve_command(ser.myreadline())))
-        print(str(rec.receieve_command(ser.myreadline())))
-        sleep(t)
-    save.close()
+def inquiring(probe, ser, command):
+    ser.write(data)
+    print(str(rec.receieve_command(ser.myreadline())))
+    #scrivere
 
 if __name__ == '__main__':
     buffer = ''
@@ -84,9 +74,11 @@ if __name__ == '__main__':
             print('send: send command')
             print('info   : a lot of stuff')
             print('exit   : exit(0)')
+
         elif switch == 'cmd':
             print('list of available commands:')
             print(sonda1.cmd())
+
         elif switch == 'send' and flag:
             try:
                 ser
@@ -111,8 +103,10 @@ if __name__ == '__main__':
                 print(answer)
             else:
                 print(rec(ser.myreadline()))
+
         elif switch == 'info':
             print(sonda1)
+
         elif switch == 'acq' and flag:
             print('delay >')
             t = int(input())
@@ -123,14 +117,15 @@ if __name__ == '__main__':
                 continue
             print('command >')
             command = input()
-            #P1 = Thread(target=inquiring(sonda1, ser, t, command))
-            inquiring(sonda1, ser, t, command)
-            #P1.run()
+            process = RepeatedTimer.RepeatedTimer(t, inquiring, sonda1, ser, command)
+            process.start()
             flag = False
+            print('process is starting')
 
         elif switch == 'stop_acq' and not flag:
-            #P1.stop()
+            process.stop()
             flag = True
+            print('process has been stopped')
 
         elif switch == 'exit':
             try:
