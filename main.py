@@ -133,7 +133,7 @@ if __name__ == '__main__':
             file = open(file, 'a')
             w = csv.writer(file, dialect='excel')
             w.writerow(["delay", "Address"])
-            w.writerow([t, sonda1.Get_id()])
+            w.writerow([t, sonda1.get_id()])
             print('comando da spedire >')
             command = input()
             parameters = sonda1.command_parsing(command)
