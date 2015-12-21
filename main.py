@@ -131,16 +131,16 @@ if __name__ == '__main__':
             print('nome del file>')
             file = input()
             file += '.xls'
+            print('comando da spedire >')
+            command = input()
+            parameters = sonda1.command_parsing(command)
+            if parameters[0] != '#':
+                print('comando non valido ai fini di acquisizione')
+                continue
             file = open(file, 'a')
             w = csv.writer(file, dialect='excel')
             w.writerow(["delay", "Address"])
             w.writerow([t, sonda1.get_id()])
-            print('comando da spedire >')
-            command = input()
-            parameters = sonda1.command_parsing(command)
-            if command[0] != '#':
-                print('comando non valido ai fini di acquisizione')
-                continue
             other = {}
             for c in parameters:
                 if (len(c) >= 2 and c != 'AA') or c == 'N':
@@ -156,14 +156,14 @@ if __name__ == '__main__':
             process = RepeatedTimer.RepeatedTimer(t, ser.inquiring, command, receiver, w)
             process.start()
             flag = False
-            print('processo di acquisizione iniziato.\n Prima di eseguire altre '
+            print('processo di acquisizione iniziato.\nPrima di eseguire altre '
                   'operazioni sulla porta seriale è necessario bloccare l\' acquisizione')
 
         elif switch == 'stop' and not flag:
             process.stop()
             file.close()
             flag = True
-            print('process has been stopped')
+            print('Il processo è stato fermato')
 
         elif switch == 'cmd':
             print('lista dei comandi disponibili:')
@@ -183,4 +183,4 @@ if __name__ == '__main__':
             exit(0)
 
         else:
-            print('comando non supportato')
+            print('comando non supportato o acquisizione in corso')
