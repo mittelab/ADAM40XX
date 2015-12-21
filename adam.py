@@ -1,16 +1,14 @@
 import re
 __author__ = 'ruggero'
 
+
 class Adam(object):
     def __init__(self, model, address='00'):
         path = './model/%s.dat' % model
         self.__model = model
-        if address[0] > 'F' or address[1] > 'F':
-            raise ValueError('wrong address')
-        else:
-            self.__id = address
+        self.__id = address
         try:
-            load = open(path,'r')
+            load = open(path, 'r')
         except IOError as e:
             print ("I/O error({0}): {1}".format(e.errno, e.strerror))
             raise ValueError('model not defined', 0)
@@ -62,23 +60,24 @@ class Adam(object):
             commands = eval(load.read())
 
             # if there is a standard answer, do the parsing
-            if command in commands:
+            if command in commands.key():
+                parse = commands[command]
                 rec_command = []
                 supp = []
                 flag = False
-                for i in range(len(command)):
-                    supp.append(command[i])
-                    if command[i] == '(' or flag:
+                for i in range(len(parse)):
+                    supp.append(parse[i])
+                    if parse[i] == '(' or flag:
                         flag = True
                         if command[i] == ')':
                             flag = False
-                            parse.append(''.join(supp))
+                            rec.append(''.join(supp))
                             supp = []
                             continue
                         else:
                             continue
-                    if i < len(command)-1:
-                        if command[i+1] == command[i]:
+                    if i < len(parse)-1:
+                        if parse[i+1] == parse[i]:
                             continue
                         else:
                             rec_command.append(''.join(supp))
@@ -141,6 +140,9 @@ class Adam(object):
             supp.append(cmd[i])
         parse.append(''.join(supp))
         return tuple(parse)
+
+    def get_id(self):
+        return self.__id
 
     def cmd(self):
         s = ''
