@@ -47,9 +47,9 @@ class Adam(object):
             nonlocal command
             path = './model/receive.dat'
             try:
-                load = open(path,'r')
+                load = open(path, 'r')
             except IOError as e:
-                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+                print("I/O error({0}): {1}".format(e.errno, e.strerror))
                 raise ValueError('receive database not found')
             except:
                 raise ValueError('No I/O error here?!?, you are fucked')
@@ -58,7 +58,7 @@ class Adam(object):
             commands = eval(load.read())
 
             # if there is a standard answer, do the parsing
-            if command in commands.key():
+            if command in commands.keys():
                 parse = commands[command]
                 rec_command = []
                 supp = []
@@ -122,7 +122,7 @@ class Adam(object):
 
         return pkg_send, rec
 
-    def command_parsing(self,command):
+    def command_parsing(self, command):
         cmd = self.commands[command][0]
         parse = []
         supp = []
