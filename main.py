@@ -22,22 +22,44 @@ if __name__ == '__main__':
             module = '4017'
             address = '04'
         else:
-            print('porta da aprire >')
-            a1 = input()
-            print('baudrate (9600)>')
-            a2 = int(input())
-            print('bytesize (8)>')
-            a3 = int(input())
+            print('Lista delle porte disponibili:')
+            ls = MySerial.serial_ports()
+            if len(ls) == 0:
+                print('Nessuna porta seriale disponibile.')
+                exit(0)
+            for i in range(len(ls)):
+                print('{}, porta = {}'.format(i,ls[i]))
+            print('# porta da aprire >')
+            while True:
+                try:
+                    a1 = int(input())
+                    if a1 > len(ls):
+                        raise NameError
+                    break
+                except NameError:
+                    print('valore errato')
+
+            print('inserire il valore del baudrate (tipico 9600)>')
+            while True:
+                try:
+                    a2 = int(input())
+                    break
+                except NameError:
+                    print('valore errato')
+
+            print('inserire il valore del bytesize (tipico 8)>')
+            while True:
+                try:
+                    a2 = int(input())
+                    break
+                except NameError:
+                    print('valore errato')
+            # other default parameter not implemented
             a4 = serial.PARITY_NONE
             a5 = serial.STOPBITS_ONE
             a6 = 0
             a7 = 0
             a8 = None
-            print('module >')
-            module = input()
-            print('Adress >')
-            address = input()
-
         try:
             ser = MySerial(
                 port=a1,
@@ -55,96 +77,106 @@ if __name__ == '__main__':
             print('port fail')
             if debug:
                 break
+    while True:
+        print('inserire il nome del modulo da inizializzare >')
+        module = input()
+        print('inserire l\' modulo da inizializzare >')
+        address = input()
+        try:
+            sonda1 = adam.Adam(module, address=address)
+            break
+        except ValueError as e:
+            print(e)
 
-    sonda1 = adam.Adam(module, address=address)
+    # this flag is false if a background operation on the serial
+    # port is active
     flag = True
 
     while True:
-        print('operation >')
+        print('operazione richiesta >')
         switch = input()
 
         if switch == 'help':
             print('--help--')
-            print('cmd : the list of commands of the module')
-            print('send: send command')
-            print('info   : a lot of stuff')
-            print('exit   : exit(0)')
-
-        elif switch == 'cmd':
-            print('list of available commands:')
-            print(sonda1.cmd())
+            print('send: spedire un comando')
+            print('acq: iniziare una sessione di acquisizione')
+            print('stop: terminare una sessione di acquisizione')
+            print('cmd : lista dei comandi disponibili nel modulo')
+            print('info: un sacco di informazioni sui comandi disponibili')
+            print('exit: uscire dal programma')
 
         elif switch == 'send' and flag:
-            try:
-                ser
-            except NameError:
-                print('serial port is not open')
-                continue
-            print('command to send >')
+            print('comando da spedire >')
             command = input()
             parameters = sonda1.command_parsing(command)
             other = {}
             for c in parameters:
                 if (len(c) >= 2 and c != 'AA') or c =='N':
-                    print('parametro addizionale %s >' %c)
+                    print('parametro addizionale {} >'.format(c))
                     other[c] = input()
             data, rec = sonda1.send_command(command, **other)
             ser.write(data)
             if debug:
                 sleep(0.5)
-                dati = ser.myreadline()
+                dati = ser.my_read_line()
                 print(dati, len(dati))
-                answer = rec(dati)
-                print(answer)
+                print(rec(dati))
             else:
-                print(rec(ser.myreadline()))
-
-        elif switch == 'info':
-            print(sonda1)
+                print(rec(ser.my_read_line()))
 
         elif switch == 'acq' and flag:
             print('delay >')
             t = int(input())
-            print('file name >')
+            print('nome del file>')
             file = input()
-            try:
-                ser
-            except NameError:
-                print('serial port is not open')
-                continue
+            file += '.xls'
             file = open(file, 'a')
             w = csv.writer(file, dialect='excel')
-            c.writerow(["time", "Address"])
-            print('command >')
+            w.writerow(["delay", "Address"])
+            w.writerow([t, sonda1.Get_id()])
+            print('comando da spedire >')
             command = input()
             parameters = sonda1.command_parsing(command)
             other = {}
             for c in parameters:
-                if (len(c) >= 2 and c != 'AA') or c =='N':
-                    print('optional parameter {} >'.formtat(c))
+                if (len(c) >= 2 and c != 'AA') or c == 'N':
+                    print('optional parameter {} >'.format(c))
                     other[c] = input()
             command, receiver = sonda1.send_command(command, **other)
             ser.write(command)
+            sleep(2)
             data = receiver(ser.my_read_line())
-            c.writerow(data)
+            print(data)
+            w.writerow([i[0] for i in data])
+            w.writerow([i[1] for i in data])
             process = RepeatedTimer.RepeatedTimer(t, ser.inquiring, command, receiver, w)
             process.start()
             flag = False
-            print('process is starting')
+            print('processo di acquisizione iniziato.\n Prima di eseguire altre '
+                  'operazioni sulla porta seriale è necessario bloccare l\' acquisizione')
 
-        elif switch == 'stop_acq' and not flag:
-            file.close()
+        elif switch == 'stop' and not flag:
             process.stop()
+            file.close()
             flag = True
             print('process has been stopped')
 
+        elif switch == 'cmd':
+            print('lista dei comandi disponibili:')
+            print(sonda1.cmd())
+
+        elif switch == 'info':
+            print(sonda1)
+
         elif switch == 'exit':
+            if not flag:
+                process.stop()
+                file.close()
             try:
                 ser.close()
             except NameError:
                 pass
             exit(0)
-        elif not flag:
-            print('port busy')
+
         else:
-            print('wrong command')
+            print('comando non supportato')
