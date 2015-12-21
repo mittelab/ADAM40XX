@@ -8,7 +8,7 @@ import csv
 
 if __name__ == '__main__':
     buffer = ''
-    debug = True
+    debug = False
     while True:
         if debug:
             a1 = '/dev/ttyUSB0'
@@ -35,6 +35,7 @@ if __name__ == '__main__':
                     a1 = int(input())
                     if a1 > len(ls):
                         raise NameError
+                    a1 = ls[a1]
                     break
                 except NameError:
                     print('valore errato')
@@ -50,7 +51,7 @@ if __name__ == '__main__':
             print('inserire il valore del bytesize (tipico 8)>')
             while True:
                 try:
-                    a2 = int(input())
+                    a3 = int(input())
                     break
                 except NameError:
                     print('valore errato')
@@ -80,7 +81,7 @@ if __name__ == '__main__':
     while True:
         print('inserire il nome del modulo da inizializzare >')
         module = input()
-        print('inserire l\' modulo da inizializzare >')
+        print('inserire l\'indirizzo del modulo da inizializzare >')
         address = input()
         try:
             sonda1 = adam.Adam(module, address=address)
@@ -117,7 +118,7 @@ if __name__ == '__main__':
             data, rec = sonda1.send_command(command, **other)
             ser.write(data)
             if debug:
-                sleep(0.5)
+                sleep(1)
                 dati = ser.my_read_line()
                 print(dati, len(dati))
                 print(rec(dati))
