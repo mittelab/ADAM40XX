@@ -23,7 +23,6 @@ class Adam(object):
         # primary check
         if command in self.commands.keys():
             command = self.command_parsing(command)
-            #rec = AdamReceiver(''.join(command))
         else:
             raise ValueError('command not defined')
 
@@ -32,10 +31,9 @@ class Adam(object):
         for c in command:
             if c == 'AA':
                 pkg_send += bytearray(self.__id, encoding='utf-8')
-            elif c in kwargs.keys() or c == 'N':
+            # elif c in kwargs.keys() or c == 'N':
+            elif c in kwargs.keys():
                 pkg_send += bytearray(kwargs.pop(c), encoding='utf-8')
-                # pkg_send.append(int(other.pop(c),16))
-
             elif len(c) == 1:
                 pkg_send.append(ord(c))
             else:
@@ -158,13 +156,11 @@ class Adam(object):
         return s
 
 
-
-
 if __name__ == '__main__':
     sens1 = Adam('4017')
     a, b = sens1.send_command('ConfB')
-    #print(a)
-    #print(b.command)
+    # print(a)
+    # print(b.command)
     print('-----')
     print(b(b'!04090680\r'))
     print('----')

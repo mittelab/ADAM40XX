@@ -137,6 +137,9 @@ if __name__ == '__main__':
             print('comando da spedire >')
             command = input()
             parameters = sonda1.command_parsing(command)
+            if command[0] != '#':
+                print('comando non valido ai fini di acquisizione')
+                continue
             other = {}
             for c in parameters:
                 if (len(c) >= 2 and c != 'AA') or c == 'N':
